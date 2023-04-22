@@ -40,13 +40,19 @@ public class CreateController {
         errorLabel.setTextFill(Color.BLACK);
         errorLabel.setText("Waiting for client...");
 
-        server.run();
         Stage stage = (Stage) okButton.getScene().getWindow();
         stage.setResizable(true);
         Parent root = FXMLLoader.load(getClass().getResource("serverView.fxml"));
         stage.setTitle("Conversations");
         stage.setScene(new Scene(root));
-        server.run();
+        Thread serverThread = new Thread(() -> {
+            try {
+                server.run();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        serverThread.start();
 
     }
 }

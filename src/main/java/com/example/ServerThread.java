@@ -1,49 +1,37 @@
 package com.example;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
 public class ServerThread extends Thread {
-    protected Socket socket;
+     Socket socket;
+     BufferedReader inputStream;
+     PrintWriter outputStream;
 
-    public ServerThread(Socket clientSocket){
-        this.socket = clientSocket;
+    public  ServerThread(Socket socket) throws IOException{
+        this.socket = socket;
+        try {
+            this.inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.outputStream = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())));
+        }
+        catch (IOException e){
+            System.out.println(e);
+        }
+
+
+    }
+    @Override
+    public void run(){
+        while (true){
+            System.out.println("200");
+        }
     }
 
-    public void run(){
-        InputStream input = null;
-        BufferedReader reader = null;
-        DataOutputStream output = null;
-        try {
-            input = socket.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(input));
-            output = new DataOutputStream(socket.getOutputStream());
-        } catch (Exception e) {
-            return;
 
-        }
-        String line;
-        while (true) {
-            try {
-                line = reader.readLine();
-                if ((line == null) || line.equalsIgnoreCase("QUIT")) {
-                    socket.close();
-                    return;
-                } else {
-                    output.writeBytes(line + "\n\r");
-                    output.flush();
-                }
-            } catch (Exception e) {
-                System.out.println(e);
-                return;
-            }
 
 
     
-        }
-    }
 }
+
+
 
