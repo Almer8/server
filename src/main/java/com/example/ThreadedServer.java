@@ -1,14 +1,16 @@
 package com.example;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ThreadedServer {
     int port;
+    static public List<Client> clients = new ArrayList<>();
 
     public ThreadedServer(int port) {
         this.port = port;
@@ -22,11 +24,16 @@ public class ThreadedServer {
 
                 try {
                     Socket socket = serverSocket.accept();
-                    System.out.println("Client connected");
+
 
                     try {
-                        new ServerThread(socket);
-                    } catch (IOException e){
+
+                        System.out.println("Client connected");
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        clients.add(new Client(socket,bufferedReader.readLine()));
+                        ServerThread client = new ServerThread(socket);
+                        client.start();
+                    } catch (Exception e){
                         System.out.println(e);
                     }
                 }

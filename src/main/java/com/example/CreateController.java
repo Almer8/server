@@ -41,7 +41,7 @@ public class CreateController {
         errorLabel.setText("Waiting for client...");
 
         Stage stage = (Stage) okButton.getScene().getWindow();
-        stage.setResizable(true);
+        stage.setResizable(false);
         Parent root = FXMLLoader.load(getClass().getResource("serverView.fxml"));
         stage.setTitle("Conversations");
         stage.setScene(new Scene(root));
