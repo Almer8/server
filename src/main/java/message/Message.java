@@ -1,20 +1,34 @@
 package message;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
-public class Message {
+import java.io.Serializable;
+
+public class Message implements Serializable {
 
     private String sender;
     private String receiver;
     private String messageText;
-    private MessageType messageType;
+    private final MessageType messageType;
+
+
+    public Message(String sender, String receiver, String messageText, MessageType messageType) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.messageText = messageText;
+        this.messageType = messageType;
+    }
+
+    public Message(String sender, MessageType messageType) {
+        this.sender = sender;
+        this.messageType = messageType;
+    }
+
+
 
     public String getSender() {
         return sender;
     }
-    @XmlElement
+
     public void setSender(String sender) {
         this.sender = sender;
     }
@@ -22,7 +36,7 @@ public class Message {
     public String getReceiver() {
         return receiver;
     }
-    @XmlElement
+
     public void setReceiver(String receiver) {
         this.receiver = receiver;
     }
@@ -30,16 +44,12 @@ public class Message {
     public String getMessageText() {
         return messageText;
     }
-    @XmlElement
+
     public void setMessageText(String messageText) {
         this.messageText = messageText;
     }
 
     public MessageType getMessageType() {
         return messageType;
-    }
-    @XmlElement
-    public void setMessageType(MessageType messageType) {
-        this.messageType = messageType;
     }
 }

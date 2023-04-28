@@ -21,9 +21,9 @@ public class ThreadedServer {
             ServerSocket serverSocket = new ServerSocket(port);
 
             while (true){
-
+            Socket socket;
                 try {
-                    Socket socket = serverSocket.accept();
+                    socket = serverSocket.accept();
 
 
                     try {

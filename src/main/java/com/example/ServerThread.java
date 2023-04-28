@@ -1,29 +1,34 @@
 package com.example;
 
+import message.Message;
+import message.MessageType;
+
+import javax.xml.bind.SchemaOutputResolver;
+import javax.xml.transform.Source;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 
 public class ServerThread extends Thread {
-     Socket clientSocket;
+    Socket clientSocket;
     BufferedReader inputStream;
     PrintWriter outputStream;
 
     private ObjectInputStream objInput;
     private ObjectOutputStream objOutput;
 
-    public  ServerThread(Socket socket) throws IOException{
+    public ServerThread(Socket socket) throws IOException {
         this.clientSocket = socket;
 
         try {
             this.objOutput = new ObjectOutputStream(socket.getOutputStream());
             objOutput.flush();
             this.objInput = new ObjectInputStream(socket.getInputStream());
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             System.out.println(e);
         }
 
@@ -33,38 +38,50 @@ public class ServerThread extends Thread {
     @Override
     public void run(){
 
-    while (true) {
-    String request = null;
-        try {
 
-            while (true) {
-                try {
 
-                    String temprequest = (String) objInput.readObject();
-                    if (!Objects.equals(temprequest, request)) {
-                    request = temprequest;
-                    break;
+                while (!clientSocket.isClosed()) {
+
+                    try {
+                        Message request = (Message) objInput.readObject();
+
+                        if (request != null) {
+
+                            if (request.getMessageType().equals(MessageType.SERVER)) {
+                                if (request.getMessageText().equals("GET_USERS")) {
+                                    try {
+                                        List<String> users = new ArrayList<>();
+                                        for (Client client : ThreadedServer.clients) {
+                                            users.add(client.getName());
+                                        }
+
+                                        objOutput.writeObject(users);
+                                        objOutput.flush();
+                                        System.out.println("Userlist sended to client");
+
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (EOFException  | SocketException e) {
+                        ThreadedServer.clients.removeIf(client -> client.getSocket().equals(clientSocket));
+                        try {
+                            clientSocket.close();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        System.out.println("Socket successfully closed");
+                        //System.out.println("Closing thread");
+                        //interrupt();
+                    } catch (IOException | ClassNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
-                }
-                catch (Exception e) {
 
                 }
 
-            }
-            if (request.equals("GET_USERS")) {
-                List<String> users = new ArrayList<>();
-                for (Client client : ThreadedServer.clients) {
-                    users.add(client.getName());
-                }
 
-                objOutput.writeObject(users);
-                objOutput.flush();
-                System.out.println("Userlist sended to client");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     }
 }
 
