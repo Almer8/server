@@ -28,11 +28,12 @@ public class ThreadedServer {
 
                     try {
 
-                        System.out.println("Client connected");
+                        System.out.println("Client accepted");
                         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                         clients.add(new Client(socket,bufferedReader.readLine()));
                         ServerThread client = new ServerThread(socket);
                         client.start();
+                        System.out.println("Client connected");
                     } catch (Exception e){
                         System.out.println(e);
                     }

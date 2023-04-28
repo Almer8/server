@@ -59,6 +59,7 @@ public class ServerThread extends Thread {
 
                 objOutput.writeObject(users);
                 objOutput.flush();
+                System.out.println("Userlist sended to client");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
