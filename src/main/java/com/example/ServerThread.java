@@ -54,7 +54,8 @@ public class ServerThread extends Thread {
                                         for (Client client : ThreadedServer.clients) {
                                             users.add(client.getName());
                                         }
-
+                                        objOutput.writeObject(new Message(MessageType.SERVER,"GET_USERS"));
+                                        objOutput.flush();
                                         objOutput.writeObject(users);
                                         objOutput.flush();
                                         System.out.println("Userlist sended to client");
@@ -73,8 +74,7 @@ public class ServerThread extends Thread {
                             throw new RuntimeException(ex);
                         }
                         System.out.println("Socket successfully closed");
-                        //System.out.println("Closing thread");
-                        //interrupt();
+
                     } catch (IOException | ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }
