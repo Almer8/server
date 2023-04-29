@@ -15,11 +15,9 @@ import java.util.Objects;
 
 public class ServerThread extends Thread {
     Socket clientSocket;
-    BufferedReader inputStream;
-    PrintWriter outputStream;
-
     private ObjectInputStream objInput;
     private ObjectOutputStream objOutput;
+    private List<Message> messageList;
 
     public ServerThread(Client client) throws IOException {
         System.out.println("I got to constructor");
@@ -79,6 +77,20 @@ public class ServerThread extends Thread {
                                     } catch (IOException e) {
                                         throw new RuntimeException(e);
                                     }
+                                }
+                                if (request.getMessageText().equals("REFRESH_MESSAGES")){
+                                    List<Message> messages = new ArrayList<>();
+                                    if(messageList != null) {
+                                        for (Message message : messageList) {
+                                            if (message.getReceiver().equals(request.getReceiver())) {
+                                                messages.add(message);
+                                            }
+                                        }
+                                    }
+                                    objOutput.writeObject("REFRESH_MESSAGES");
+                                    objOutput.flush();
+                                    objOutput.writeObject(messages);
+                                    objOutput.flush();
                                 }
                             }
                             if(request.getMessageType().equals(MessageType.MESSAGE)){
