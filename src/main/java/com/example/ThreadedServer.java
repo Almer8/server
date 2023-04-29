@@ -21,7 +21,12 @@ public class ThreadedServer {
             ServerSocket serverSocket = new ServerSocket(port);
 
             while (true){
-            Socket socket;
+            Socket socket = null;
+            Client client = null;
+            ServerThread clientThread = null;
+            BufferedReader bufferedReader = null;
+
+
                 try {
                     socket = serverSocket.accept();
 
@@ -29,10 +34,12 @@ public class ThreadedServer {
                     try {
 
                         System.out.println("Client accepted");
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        clients.add(new Client(socket,bufferedReader.readLine()));
-                        ServerThread client = new ServerThread(socket);
-                        client.start();
+                        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        client = new Client(socket,bufferedReader.readLine());
+                        clients.add(client);
+                        clientThread = new ServerThread(client);
+
+                        clientThread.start();
                         System.out.println("Client connected");
                     } catch (Exception e){
                         System.out.println(e);

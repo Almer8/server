@@ -21,15 +21,18 @@ public class ServerThread extends Thread {
     private ObjectInputStream objInput;
     private ObjectOutputStream objOutput;
 
-    public ServerThread(Socket socket) throws IOException {
-        this.clientSocket = socket;
-
+    public ServerThread(Client client) throws IOException {
+        System.out.println("I got to constructor");
         try {
-            this.objOutput = new ObjectOutputStream(socket.getOutputStream());
+        this.clientSocket = client.getSocket();
+
+
+            this.objOutput = client.getObjOutput();
             objOutput.flush();
-            this.objInput = new ObjectInputStream(socket.getInputStream());
+            this.objInput = client.getObjInput();
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println("THIS ERROR HERE!!!!!!");
+
         }
 
 
@@ -44,6 +47,7 @@ public class ServerThread extends Thread {
 
                     try {
                         Message request = (Message) objInput.readObject();
+                        System.out.println("I got message from " + request.getSender() + " to " + request.getReceiver() + " with text " + request.getMessageText());
 
                         if (request != null) {
 
@@ -58,18 +62,22 @@ public class ServerThread extends Thread {
                                         objOutput.flush();
                                         objOutput.writeObject(users);
                                         objOutput.flush();
-                                        System.out.println("Userlist sended to client");
+                                        System.out.println("Userlist sent to client");
 
                                     } catch (IOException e) {
                                         throw new RuntimeException(e);
                                     }
                                 }
                             }
-                            if(request.getMessageText().equals(MessageType.MESSAGE)){
+                            if(request.getMessageType().equals(MessageType.MESSAGE)){
+                                System.out.println("Trying send to user");
                                 for (Client user:
                                      ThreadedServer.clients) {
                                     if (user.getName().equals(request.getReceiver())){
-
+                                        System.out.println("Find client");
+                                        user.getObjOutput().writeObject(request);
+                                        user.getObjOutput().flush();
+                                        System.out.println("Sent?");
                                     }
                                 }
                             }
