@@ -65,6 +65,14 @@ public class ServerThread extends Thread {
                                     }
                                 }
                             }
+                            if(request.getMessageText().equals(MessageType.MESSAGE)){
+                                for (Client user:
+                                     ThreadedServer.clients) {
+                                    if (user.getName().equals(request.getReceiver())){
+
+                                    }
+                                }
+                            }
                         }
                     } catch (EOFException  | SocketException e) {
                         ThreadedServer.clients.removeIf(client -> client.getSocket().equals(clientSocket));
