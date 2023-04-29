@@ -34,11 +34,10 @@ public class Client {
     public ObjectOutputStream getObjOutput() {
         return objOutput;
     }
-    public Client(Socket socket, String name) throws IOException {
-        this.name = name;
+    public Client(Socket socket, ObjectOutputStream objOutput, ObjectInputStream objInput) throws IOException {
         this.socket = socket;
-        this.objOutput = new ObjectOutputStream(socket.getOutputStream());
-        objOutput.flush();
-        this.objInput = new ObjectInputStream(socket.getInputStream());
+        this.objOutput = objOutput;
+        this.objOutput.flush();
+        this.objInput = objInput;
     }
 }

@@ -1,8 +1,6 @@
 package com.example;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -34,11 +32,12 @@ public class ThreadedServer {
                     try {
 
                         System.out.println("Client accepted");
-                        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        client = new Client(socket,bufferedReader.readLine());
+                        ObjectOutputStream objOutput = new ObjectOutputStream(socket.getOutputStream());
+                        ObjectInputStream objInput = new ObjectInputStream(socket.getInputStream());
+
+                        client = new Client(socket,objOutput,objInput);
                         clients.add(client);
                         clientThread = new ServerThread(client);
-
                         clientThread.start();
                         System.out.println("Client connected");
                     } catch (Exception e){

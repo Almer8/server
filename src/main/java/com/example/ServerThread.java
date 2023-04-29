@@ -24,15 +24,12 @@ public class ServerThread extends Thread {
     public ServerThread(Client client) throws IOException {
         System.out.println("I got to constructor");
         try {
-        this.clientSocket = client.getSocket();
-
-
+            this.clientSocket = client.getSocket();
             this.objOutput = client.getObjOutput();
             objOutput.flush();
             this.objInput = client.getObjInput();
-        } catch (IOException e) {
-            System.out.println("THIS ERROR HERE!!!!!!");
-
+        } catch (Exception e){
+            System.out.println(e);
         }
 
 
@@ -40,10 +37,25 @@ public class ServerThread extends Thread {
 
     @Override
     public void run(){
+    String name = null;
+    while (name == null){
+        try {
+            name = (String) objInput.readObject();
+            System.out.println(name);
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+        for (Client user:
+             ThreadedServer.clients) {
+            if(user.getSocket().equals(clientSocket)){
+                user.setName(name);
+            }
+        }
 
 
-
-                while (!clientSocket.isClosed()) {
+        while (!clientSocket.isClosed()) {
 
                     try {
                         Message request = (Message) objInput.readObject();
@@ -92,6 +104,7 @@ public class ServerThread extends Thread {
                         System.out.println("Socket successfully closed");
 
                     } catch (IOException | ClassNotFoundException e) {
+                        System.out.println("TYT");
                         throw new RuntimeException(e);
                     }
 
