@@ -1,3 +1,4 @@
+
 package com.example;
 
 import message.Message;
@@ -35,18 +36,18 @@ public class ServerThread extends Thread {
 
     @Override
     public void run(){
-    String name = null;
-    while (name == null){
-        try {
-            name = (String) objInput.readObject();
-            System.out.println(name);
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        String name = null;
+        while (name == null){
+            try {
+                name = (String) objInput.readObject();
+                System.out.println(name);
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
-    }
 
         for (Client user:
-             ThreadedServer.clients) {
+                ThreadedServer.clients) {
             if(user.getSocket().equals(clientSocket)){
                 user.setName(name);
             }
@@ -55,77 +56,60 @@ public class ServerThread extends Thread {
 
         while (!clientSocket.isClosed()) {
 
-                    try {
-                        Message request = (Message) objInput.readObject();
-                        System.out.println("I got message from " + request.getSender() + " to " + request.getReceiver() + " with text " + request.getMessageText());
+            try {
+                Message request = (Message) objInput.readObject();
+                System.out.println("I got message from " + request.getSender() + " to " + request.getReceiver() + " with text " + request.getMessageText());
 
-                        if (request != null) {
+                if (request != null) {
 
-                            if (request.getMessageType().equals(MessageType.SERVER)) {
-                                if (request.getMessageText().equals("GET_USERS")) {
-                                    try {
-                                        List<String> users = new ArrayList<>();
-                                        for (Client client : ThreadedServer.clients) {
-                                            users.add(client.getName());
-                                        }
-                                        objOutput.writeObject(new Message(MessageType.SERVER,"GET_USERS"));
-                                        objOutput.flush();
-                                        objOutput.writeObject(users);
-                                        objOutput.flush();
-                                        System.out.println("Userlist sent to client");
+                    if (request.getMessageType().equals(MessageType.SERVER)) {
+                        if (request.getMessageText().equals("GET_USERS")) {
+                            try {
+                                List<String> users = new ArrayList<>();
+                                for (Client client : ThreadedServer.clients) {
+                                    users.add(client.getName());
+                                }
+                                objOutput.writeObject(new Message(MessageType.SERVER,"GET_USERS"));
+                                objOutput.flush();
+                                objOutput.writeObject(users);
+                                objOutput.flush();
+                                System.out.println("Userlist sent to client");
 
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                                if (request.getMessageText().equals("REFRESH_MESSAGES")){
-                                    List<Message> messages = new ArrayList<>();
-                                    if(messageList != null) {
-                                        for (Message message : messageList) {
-                                            if (message.getReceiver().equals(request.getReceiver())) {
-                                                messages.add(message);
-                                            }
-                                        }
-                                    }
-                                    objOutput.writeObject("REFRESH_MESSAGES");
-                                    objOutput.flush();
-                                    objOutput.writeObject(messages);
-                                    objOutput.flush();
-                                }
-                            }
-                            if(request.getMessageType().equals(MessageType.MESSAGE)){
-                                System.out.println("Trying send to user");
-                                for (Client user:
-                                     ThreadedServer.clients) {
-                                    if (user.getName().equals(request.getReceiver())){
-                                        System.out.println("Find client");
-                                        user.getObjOutput().writeObject(request);
-                                        user.getObjOutput().flush();
-                                        System.out.println("Sent?");
-                                    }
-                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
                             }
                         }
-                    } catch (EOFException  | SocketException e) {
-                        ThreadedServer.clients.removeIf(client -> client.getSocket().equals(clientSocket));
-                        try {
-                            clientSocket.close();
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                        System.out.println("Socket successfully closed");
 
-                    } catch (IOException | ClassNotFoundException e) {
-                        System.out.println("TYT");
-                        throw new RuntimeException(e);
                     }
-
+                    if(request.getMessageType().equals(MessageType.MESSAGE)){
+                        System.out.println("Trying send to user");
+                        for (Client user:
+                                ThreadedServer.clients) {
+                            if (user.getName().equals(request.getReceiver())){
+                                System.out.println("Find client");
+                                user.getObjOutput().writeObject(request);
+                                user.getObjOutput().flush();
+                                System.out.println("Sent?");
+                            }
+                        }
+                    }
                 }
+            } catch (EOFException  | SocketException e) {
+                ThreadedServer.clients.removeIf(client -> client.getSocket().equals(clientSocket));
+                try {
+                    clientSocket.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                System.out.println("Socket successfully closed");
+
+            } catch (IOException | ClassNotFoundException e) {
+                System.out.println("TYT");
+                throw new RuntimeException(e);
+            }
+
+        }
 
 
     }
 }
-
-
-
-
