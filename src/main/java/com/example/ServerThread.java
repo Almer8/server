@@ -4,21 +4,21 @@ package com.example;
 import message.Message;
 import message.MessageType;
 
-import javax.xml.bind.SchemaOutputResolver;
-import javax.xml.transform.Source;
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 public class ServerThread extends Thread {
     Socket clientSocket;
     private ObjectInputStream objInput;
     private ObjectOutputStream objOutput;
-    private List<Message> messageList;
+
 
     public ServerThread(Client client) throws IOException {
         System.out.println("I got to constructor");
@@ -37,6 +37,7 @@ public class ServerThread extends Thread {
     @Override
     public void run(){
         String name = null;
+        int count = 0;
         while (name == null){
             try {
                 name = (String) objInput.readObject();
@@ -50,6 +51,20 @@ public class ServerThread extends Thread {
                 ThreadedServer.clients) {
             if(user.getSocket().equals(clientSocket)){
                 user.setName(name);
+            }
+        }
+        for (Client client: ThreadedServer.clients) {
+            if(client.getName().equals(name)){
+                count++;
+            }
+        }
+        if (count > 1){
+            Message message = new Message(MessageType.SERVER,"DUPLICATE_USER");
+            try {
+                objOutput.writeObject(message);
+                objOutput.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -104,7 +119,6 @@ public class ServerThread extends Thread {
                 System.out.println("Socket successfully closed");
 
             } catch (IOException | ClassNotFoundException e) {
-                System.out.println("TYT");
                 throw new RuntimeException(e);
             }
 
