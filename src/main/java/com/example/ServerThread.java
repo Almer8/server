@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+
 public class ServerThread extends Thread {
     Socket clientSocket;
     private ObjectInputStream objInput;
@@ -97,6 +98,7 @@ public class ServerThread extends Thread {
 
                     }
                     if(request.getMessageType().equals(MessageType.MESSAGE)){
+                        ThreadedServer.messages.add(request);
                         System.out.println("Trying send to user");
                         for (Client user:
                                 ThreadedServer.clients) {

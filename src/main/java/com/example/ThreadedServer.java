@@ -1,20 +1,29 @@
 package com.example;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import message.Message;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-public class ThreadedServer {
+public class ThreadedServer implements Runnable {
     int port;
     static public List<Client> clients = new ArrayList<>();
+    static public ObservableList<Message> messages = FXCollections.observableArrayList();
+
+
 
     public ThreadedServer(int port) {
         this.port = port;
     }
 
-    public void run() throws Exception {
+    public void run(){
         try {
             ServerSocket serverSocket = new ServerSocket(port);
 
