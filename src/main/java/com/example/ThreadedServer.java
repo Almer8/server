@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import message.Message;
+import message.MessageType;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -29,7 +30,7 @@ public class ThreadedServer implements Runnable {
 
             while (true){
             Socket socket = null;
-            Client client = null;
+            Client newclient = null;
             ServerThread clientThread = null;
             BufferedReader bufferedReader = null;
 
@@ -44,11 +45,56 @@ public class ThreadedServer implements Runnable {
                         ObjectOutputStream objOutput = new ObjectOutputStream(socket.getOutputStream());
                         ObjectInputStream objInput = new ObjectInputStream(socket.getInputStream());
 
-                        client = new Client(socket,objOutput,objInput);
-                        clients.add(client);
-                        clientThread = new ServerThread(client);
+                        newclient = new Client(socket,objOutput,objInput);
+                        clientThread = new ServerThread(newclient);
                         clientThread.start();
                         System.out.println("Client connected");
+                        int count = 0;
+                        System.out.println(newclient.getName());
+                        for (Client userclient: ThreadedServer.clients) {
+                            if(userclient.getName().equals(newclient.getName())){
+                                count++;
+                            }
+                        }
+                        if (count > 0){
+                            Message message = new Message(MessageType.SERVER,"DUPLICATE_USER");
+                            try {
+                                System.out.println(message.getMessageType().toString() + " " + message.getMessageText());
+                                objOutput.writeObject(message);
+                                objOutput.flush();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        else {
+                            List<String> users = new ArrayList<>();
+                            for (Client client : clients) {
+                                users.add(client.getName());
+                            }
+                            objOutput.writeObject(new Message(MessageType.SERVER, "GET_USERS"));
+                            objOutput.flush();
+                            objOutput.writeObject(users);
+                            objOutput.flush();
+
+                            clients.add(newclient);
+
+                            for (Client client : clients) {
+                                if(!client.equals(newclient)) {
+                                    ObjectOutputStream outputStream = client.getObjOutput();
+                                    try {
+                                        outputStream.writeObject(new Message(MessageType.SERVER, "GET_USERS"));
+                                        outputStream.flush();
+                                        List<String> newuserlist = new ArrayList<>();
+                                        newuserlist.add(newclient.getName());
+                                        outputStream.writeObject(newuserlist);
+                                        outputStream.flush();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+                        }
                     } catch (Exception e){
                         System.out.println(e);
                     }

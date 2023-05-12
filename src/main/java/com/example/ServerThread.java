@@ -22,12 +22,22 @@ public class ServerThread extends Thread {
 
 
     public ServerThread(Client client) throws IOException {
-        System.out.println("I got to constructor");
         try {
             this.clientSocket = client.getSocket();
             this.objOutput = client.getObjOutput();
             objOutput.flush();
             this.objInput = client.getObjInput();
+            String name = null;
+            while (name == null){
+                try {
+                    name = (String) objInput.readObject();
+                    System.out.println(name);
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            client.setName(name);
+
         } catch (Exception e){
             System.out.println(e);
         }
@@ -37,39 +47,6 @@ public class ServerThread extends Thread {
 
     @Override
     public void run(){
-        String name = null;
-        int count = 0;
-        while (name == null){
-            try {
-                name = (String) objInput.readObject();
-                System.out.println(name);
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        for (Client user:
-                ThreadedServer.clients) {
-            if(user.getSocket().equals(clientSocket)){
-                user.setName(name);
-            }
-        }
-        for (Client client: ThreadedServer.clients) {
-            if(client.getName().equals(name)){
-                count++;
-            }
-        }
-        if (count > 1){
-            Message message = new Message(MessageType.SERVER,"DUPLICATE_USER");
-            try {
-                objOutput.writeObject(message);
-                objOutput.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-
         while (!clientSocket.isClosed()) {
 
             try {
@@ -88,8 +65,8 @@ public class ServerThread extends Thread {
                                 objOutput.writeObject(new Message(MessageType.SERVER,"GET_USERS"));
                                 objOutput.flush();
                                 objOutput.writeObject(users);
+                                System.out.println(users);
                                 objOutput.flush();
-                                System.out.println("Userlist sent to client");
 
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
@@ -99,14 +76,11 @@ public class ServerThread extends Thread {
                     }
                     if(request.getMessageType().equals(MessageType.MESSAGE)){
                         ThreadedServer.messages.add(request);
-                        System.out.println("Trying send to user");
                         for (Client user:
                                 ThreadedServer.clients) {
                             if (user.getName().equals(request.getReceiver())){
-                                System.out.println("Find client");
                                 user.getObjOutput().writeObject(request);
                                 user.getObjOutput().flush();
-                                System.out.println("Sent?");
                             }
                         }
                     }
