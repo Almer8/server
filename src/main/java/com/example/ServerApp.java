@@ -23,6 +23,10 @@ public class ServerApp extends Application {
         stage.show();
     
     }
+    @Override
+    public void stop(){
+    ThreadedServer.closeConnection();
+    }
 
     public static void main(String[] args) {
         launch();

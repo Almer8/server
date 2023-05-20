@@ -47,33 +47,37 @@ public class ServerViewController implements Initializable {
                 }
             }
         });
+        ThreadedServer.clients.addListener(new ListChangeListener<Client>() {
+            @Override
+            public void onChanged(Change<? extends Client> change) {
+                while (change.next()) {
+                    if (change.wasAdded()) {
+                        List<Client> clientList = (List<Client>) change.getAddedSubList();
+
+                        for (Client client : clientList){
+                            updateConversations(client);
+                        }
+                    }
+                }
+            }
+        });
 
     }
 
-    public void updateConversations() {
+    public void updateConversations(Client newclient) {
 
 
-            if (!conversations.isEmpty()) {
-                conversations.clear();
-            }
-        ArrayList<String> clients = new ArrayList<>();
         for (Client client : ThreadedServer.clients) {
-            clients.add(client.getName());
-        }
-        Generator.combination(clients)
-                .simple(2)
-                .stream()
-                .forEach(x -> conversations.add(x));
-            if (!conversationsList.getItems().isEmpty()) {
-                conversationsList.getItems().clear();
-            }
-        if (conversations != null) {
-            for (List<String> conversation : conversations) {
-                String conversationString = conversation.get(0) + " <---> " + conversation.get(1);
-                conversationsList.getItems().add(conversationString);
+            if (!client.getName().equals(newclient.getName())) {
+                if (!conversations.contains(List.of(client.getName(), newclient.getName()))
+                    && !conversations.contains(List.of(newclient.getName(), client.getName()))) {
+                    Platform.runLater(()->{
+                    conversations.add(List.of(client.getName(), newclient.getName()));
+                    conversationsList.getItems().add(client.getName() + " <---> " + newclient.getName());
+                    });
+                }
             }
         }
-
 
     }
 
